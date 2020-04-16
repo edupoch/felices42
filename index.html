@@ -7,9 +7,7 @@
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
         integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Modak&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@900&display=swap" rel="stylesheet">
 
     <title>Felices 42, Barbadillo</title>
 </head>
@@ -27,15 +25,17 @@
         integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
         crossorigin="anonymous"></script>
     <script src="node_modules/chromotome/dist/index.umd.js"></script>
+    <script src="node_modules/tone/build/Tone.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.min.js"></script>
     <script>
         // TODO Girar letras de texto
         // TODO Meter audio leído a ritmo
 
         var tamano = 30;
-        var refresco = 15;        
+        var bucle = 20;                
 
         var d = 0;
+        var i;
         var wWidth;
         var wHeight;
         var margenX, margenY;        
@@ -43,7 +43,10 @@
         var objectoPaleta = chromotome.getRandom();
         var paleta = objectoPaleta.colors;
         var formas = ['ellipse', 'triangle', 'square', 'curve', 'blank'];
+        var notas = ["C", "E", "G", "A", "B"];
+        var octavas = [4, 5, 6];
 
+        var coloresDeTexto = [];
         var figuras = [];
 
         function tomaDe(array) {
@@ -60,9 +63,25 @@
                 Math.round(y - tamano / 2 + tamano * Math.random())
             ];
         }
+
+        function variacion(valor, min, max) {
+            return Math.max(min, Math.min(max, valor + Math.random() * 6 - 3));
+        }
+
+        function variacionesEnCoordenadas(puntos, minX, maxX, minY, maxY) {
+            var nuevosPuntos = [];
+
+            $.each(puntos, function(p, punto) {
+                nuevosPuntos.push([variacion(punto[0], minX, maxX), variacion(punto[1], minY, maxY)]);
+            });
+
+            return nuevosPuntos;
+        }
         
         function setup() {
             var $window = $(window);
+            var figura;
+            var i;
             
             wWidth = $window.width();
             wHeight = $window.height();
@@ -73,89 +92,185 @@
             console.log('Creando canvas de ' + wWidth + ' x ' + wHeight + ' con márgenes de ' + margenX + ' y '+ margenY);
 
             createCanvas(wWidth, wHeight);            
+            rectMode(CENTER); 
+            textSize(100);
+            textAlign(CENTER, CENTER);
+            textFont('Kanit');
+
+            for (i = 0; i < Math.min(paleta.length, 3); i++) {
+                coloresDeTexto.push(paleta[i]);
+            }
             
             for (var x = margenX + medio; x < (wWidth - margenX); x = x + tamano) {
                 for (var y = margenY + medio; y < (wHeight - margenY); y = y + tamano) {
-                    figuras.push({
+
+                    figura = {
                         x: x,
                         y: y,
                         color: tomaDe(paleta),
-                        forma: tomaDe(formas)
-                    });
-                }
-            }
-        }
+                        forma: tomaDe(formas),
+                        tamano: trozoDe(tamano),
+                        puntos: []
+                    };
 
-        function draw() {
-            if (d == 0) {
-                var i;
-                var a, b, c;
-
-                clear();
-
-                stroke(2);
-
-                $.each(figuras, function(f, figura) {
-                    var x = figura.x;
-                    var y = figura.y;
-                    var tamanoFigura = trozoDe(tamano);
-
-                    fill(figura.color);
-                        
                     switch(figura.forma) {
-                        case 'ellipse':
-                            ellipse(x, y, tamanoFigura, tamanoFigura);
-                            break;
-
                         case 'triangle':
-                            a = coordenada(x, y, tamano);
-                            b = coordenada(x, y, tamano);
-                            c = coordenada(x, y, tamano);
-
-                            triangle(a[0], a[1], b[0], b[1], c[0], c[1]);
-                            break;
-
-                        case 'square': 
-                            square(x - tamanoFigura / 2, y - tamanoFigura / 2, tamanoFigura);
-                            break;
-
-                        case 'rect': 
-                            rect(x, y, tamanoFigura / 2, tamanoFigura / 2);
+                            for (i = 0; i < 3; i++) {
+                                figura.puntos.push(coordenada(figura.x, figura.y, tamano));
+                            }
                             break;
 
                         case 'curve':
-                            beginShape();
-
-                            noFill();
-
-                            a = coordenada(x, y, tamano);
-                            b = coordenada(x, y, tamano);
-
-                            curveVertex(a[0],a[1]);
-                            curveVertex(a[0],a[1]);
-
-                            for (i = 0; i < Math.random() * 5; i ++) {
-                                c = coordenada(x, y, tamano);
-                                curveVertex(c[0],c[1]);
-                            }
+                            figura.puntos.push(coordenada(figura.x, figura.y, tamano));
                             
-                            curveVertex(b[0],b[1]);
-                            curveVertex(b[0],b[1]);
+                            for (i = 0; i < Math.random() * 5; i ++) {
+                                figura.puntos.push(coordenada(figura.x, figura.y, tamano));
+                            }
 
-                            endShape();
+                            figura.puntos.push(coordenada(figura.x, figura.y, tamano));
                             break;
                     }
-                });
 
-                noStroke();
-                textFont('Modak');
-                textSize(100);
-                fill(tomaDe(paleta));
-                textAlign(CENTER, CENTER);
-                text('FELIZ CUMPLEAÑOS', 0, wHeight / 2, wWidth);
+                    figuras.push(figura);
+                }
             }
 
-            d = (d + 1) % refresco;
+            // MÚSICA
+
+            // Efectos
+
+            var reverb = new Tone.Reverb().toMaster();
+            reverb.generate();
+
+            var feedbackDelay = new Tone.PingPongDelay({
+                "delayTime" : "16n",
+                "feedback" : 0.9,
+                "wet" : 0.3
+            }).connect(reverb);
+
+            var filter = new Tone.AutoFilter({
+                "frequency" : 0.05,
+                "depth" : 1
+            }).connect(feedbackDelay).start();
+
+            // Sonidos
+
+            var kick = new Tone.MembraneSynth().toMaster()
+            var snare = new Tone.NoiseSynth().toMaster().connect(reverb);
+            var piano = new Tone.Synth({
+                "oscillator" : {
+                    "type" : "square",
+                    "harmonicity" : 0.5,
+                    "modulationType" : "sine"
+                }
+            }).connect(filter);
+
+            var bajo = new Tone.Synth({
+                "oscillator" : {
+                    "type" : "amtriangle",
+                    "harmonicity" : 0.5,
+                    "modulationType" : "sine"
+                }
+            }).toMaster();
+
+            piano.volume.value = 0;
+            kick.volume.value = 10;
+            bajo.volume.value = 15;
+            
+            Tone.Transport.scheduleRepeat(function(time){
+                kick.triggerAttackRelease("C0");
+            }, '8n');
+
+            Tone.Transport.scheduleRepeat(function(time){
+                snare.triggerAttackRelease("C1");
+            }, '4n');
+
+            var notasMelodia = [];
+            for (i = 0; i < 11; i++) {
+                notasMelodia.push(tomaDe(notas) + tomaDe(octavas));
+            }
+
+            var melodia = new Tone.Pattern(function(time, note){
+                piano.triggerAttackRelease(note, "16n", time);
+            }, notasMelodia, "up").start(0);
+            melodia.interval = "32n";
+
+            var melodiaBajo = new Tone.Pattern(function(time, note){
+                bajo.triggerAttackRelease(note, "1n", time);
+            }, ["C2", "G2", "F2", "C2"], "up").start(0);
+            melodiaBajo.interval = "1n";
+
+            Tone.Transport.bpm.value = 40;
+
+            Tone.Transport.start();
+        }
+
+        function draw() {
+            var i;
+            var c;
+
+            clear();
+
+            stroke(2);
+
+            $.each(figuras, function(f, figura) {
+                var x = figura.x;
+                var y = figura.y;
+
+                fill(figura.color);
+                    
+                switch(figura.forma) {
+                    case 'ellipse':
+                        ellipse(x, y, figura.tamano, figura.tamano);
+                        figura.tamano = variacion(figura.tamano, 0, tamano);
+                        break;
+
+                    case 'triangle':
+                        triangle(figura.puntos[0][0], figura.puntos[0][1], figura.puntos[1][0], figura.puntos[1][1], figura.puntos[2][0], figura.puntos[2][1]);
+                        figura.puntos = variacionesEnCoordenadas(figura.puntos, figura.x - tamano / 2, figura.x + tamano / 2, figura.y - tamano / 2, figura.y + tamano / 2);
+                        break;
+
+                    case 'square': 
+                        square(x, y, figura.tamano);
+                        figura.tamano = variacion(figura.tamano, 0, tamano);
+                        break;
+
+                    case 'rect': 
+                        rect(x, y, figura.tamano / 2, figura.tamano / 2);
+                        figura.tamano = variacion(figura.tamano, 0, tamano);
+                        break;
+
+                    case 'curve':
+                        beginShape();
+
+                        noFill();
+
+                        curveVertex(figura.puntos[0][0],figura.puntos[0][1]);
+
+                        $.each(figura.puntos, function(p, punto) {
+                            curveVertex(punto[0],punto[1]);
+                        });
+                        
+                        curveVertex(figura.puntos[figura.puntos.length - 1][0],figura.puntos[figura.puntos.length - 1][1]);
+
+                        endShape();
+
+                        figura.puntos = variacionesEnCoordenadas(figura.puntos, figura.x - tamano / 2, figura.x + tamano / 2, figura.y - tamano / 2, figura.y + tamano / 2);
+                        break;
+                }
+
+                figuras[f] = figura;
+            });
+
+            noStroke();
+            for (i = 0; i < coloresDeTexto.length; i++) {
+                c = color(coloresDeTexto[i]);
+                //c.setAlpha(d / bucle * 255);
+                fill(c);
+                text("BARBADILLO,\nERES UN AÑO\n MÁS VIEJA", wWidth / 2 + 4 * i, wHeight / 2 + 6 * i);
+            }
+
+            d = (d + 1) % bucle;
         }
     </script>
 </body>

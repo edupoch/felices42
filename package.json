@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/edupoch/felices42#readme",
   "dependencies": {
-    "chromotome": "^1.17.1"
+    "chromotome": "^1.17.1",
+    "tone": "^13.8.25"
   }
 }
