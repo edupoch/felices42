@@ -7,7 +7,6 @@
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
         integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@900&display=swap" rel="stylesheet">
 
     <title>Felices 42, Barbadillo</title>
 </head>
@@ -24,12 +23,23 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
         integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
         crossorigin="anonymous"></script>
+    
+        <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
+    
     <script src="node_modules/chromotome/dist/index.umd.js"></script>
     <script src="node_modules/tone/build/Tone.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.min.js"></script>
     <script>
-        // TODO Girar letras de texto
-        // TODO Meter audio leído a ritmo
+        var mostrarTexto = false;
+
+        WebFont.load({
+            google: {
+                families: ['Kanit:900']
+            },
+            active: function() {
+                mostrarTexto = true;
+            }
+        });
 
         var tamano = 30;
         var bucle = 20;                
@@ -54,6 +64,13 @@
         var formas;
         var notas = ["C", "E", "G", "A", "B"];
         var octavas = [4, 5, 6];
+        var frases = [
+            "BARBADILLO,\nTRONCA",
+            "TIENES\n42",
+            "SÍ, SÍ\n HAS LEÍDO BIEN",
+            "42"
+        ];
+        var frase = 0;
 
         var coloresDeTexto = [];
         var figuras = [];
@@ -167,6 +184,7 @@
 
             var filter = new Tone.AutoFilter({
                 "frequency" : 0.05,
+                "baseFrequency" : 500,
                 "depth" : 1
             }).connect(feedbackDelay).start();
 
@@ -174,7 +192,17 @@
 
             var kick = new Tone.MembraneSynth().toMaster()
             var snare = new Tone.NoiseSynth().toMaster().connect(reverb);
-            var hh = new Tone.NoiseSynth().toMaster();
+            var snareCorta = new Tone.NoiseSynth().toMaster();
+            var hh = new Tone.NoiseSynth( {
+                noise : {
+                    type : "brown"
+                },
+                envelope : {
+                    attack : 0.005 ,
+                    decay : 0.07,
+                    sustain : 0
+                }
+            }).toMaster();
             var piano = new Tone.Synth({
                 "oscillator" : {
                     "type" : "square",
@@ -194,18 +222,23 @@
             piano.volume.value = 0;
             kick.volume.value = 10;
             bajo.volume.value = 15;
+            hh.volume.value = 5;
             
             Tone.Transport.scheduleRepeat(function(time){
                 kick.triggerAttackRelease("C0");
-            }, '8n');
+            }, '8n', "5m");
 
             Tone.Transport.scheduleRepeat(function(time){
                 snare.triggerAttackRelease("C1");
-            }, '4n');
+            }, '4n', "8n");
+
+            Tone.Transport.scheduleRepeat(function(time){
+                snareCorta.triggerAttackRelease("C0");
+            }, '1n', "14t");
 
             Tone.Transport.scheduleRepeat(function(time){
                 hh.triggerAttackRelease("C0");
-            }, '1n', "4t");
+            }, '32n', "5m");
 
             var notasMelodia = [];
             for (i = 0; i < 11; i++) {
@@ -219,12 +252,16 @@
 
             var melodiaBajo = new Tone.Pattern(function(time, note){
                 bajo.triggerAttackRelease(note, "1n", time);
-            }, ["C2", "G2", "F2", "C2"], "up").start(0);
+            }, ["C2", "G2", "F2", "C2"], "up").start("1m");
             melodiaBajo.interval = "1n";
 
             Tone.Transport.bpm.value = 40;
 
             Tone.Transport.start();
+        }
+
+        function mousePressed() {
+            frase = (frase + 1) % frases.length;
         }
 
         function draw() {
@@ -284,11 +321,13 @@
                 figuras[f] = figura;
             });
 
-            noStroke();
-            for (i = 0; i < coloresDeTexto.length; i++) {
-                c = color(coloresDeTexto[i]);
-                fill(c);
-                text("BARBADILLO\nTRONCA\n TIENES 42", wWidth / 2 + 4 * i, wHeight / 2 + 6 * i);
+            if (mostrarTexto) {
+                noStroke();
+                for (i = 0; i < coloresDeTexto.length; i++) {
+                    c = color(coloresDeTexto[i]);
+                    fill(c);
+                    text(frases[frase], wWidth / 2 + 4 * i, wHeight / 2 + 6 * i);
+                }
             }
 
             d = (d + 1) % bucle;
