@@ -90,6 +90,12 @@
         ];
         var frase = 0;
 
+        var centroX;
+        var centroY;
+
+        var cursorX;
+        var cursorY;
+
         var coloresDeTexto = [];
         var figuras = [];
 
@@ -136,6 +142,12 @@
 
             margenX = (wWidth - Math.floor(wWidth / tamano) * tamano) / 2;
             margenY = (wHeight - Math.floor(wHeight / tamano) * tamano) / 2;
+
+            centroX = wWidth / 2;
+            centroY = wHeight / 2;
+
+            cursorX = centroX;
+            cursorY = centroY;
 
             console.log('Creando canvas de ' + wWidth + ' x ' + wHeight + ' con márgenes de ' + margenX + ' y '+ margenY);
 
@@ -284,9 +296,9 @@
             frase = (frase + 1) % frases.length;
         }
 
-        function keyPressed() {
-            encenderAudio();
-            frase = (frase + 1) % frases.length;   
+        function mouseMoved() {
+            cursorX = mouseX;
+            cursorY = mouseY;
         }
 
         function draw() {
@@ -294,6 +306,10 @@
             var k;
             var c;
             var fraseEscogida;
+            var diffTextoX, diffTextoY;
+
+            diffTextoX = centroX - cursorX;
+            diffTextoY = centroY - cursorY;
 
             clear();
 
@@ -351,16 +367,16 @@
             if (mostrarTexto) {
                 noStroke();
                 for (i = 0; i < coloresDeTexto.length; i++) {
-                    k = coloresDeTexto.length - 1 - i;
+                    k = (coloresDeTexto.length - i) * 25;
                     c = color(coloresDeTexto[i]);
                     fill(c);
                     fraseEscogida = frases[frase];
                     if (Array.isArray(fraseEscogida)) {
                         textSize(fraseEscogida[1]);
-                        text(fraseEscogida[0], wWidth / 2 - 4 * k, wHeight / 2 - 6 * k);    
+                        text(fraseEscogida[0], centroX + diffTextoX / k, centroY + diffTextoY / k);    
                     } else {
                         textSize(125);
-                        text(fraseEscogida, wWidth / 2 - 4 * k, wHeight / 2 - 6 * k);    
+                        text(fraseEscogida, centroX + diffTextoX / k, centroY + diffTextoY / k);    
                     }                    
                 }
             }
