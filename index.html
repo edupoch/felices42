@@ -93,6 +93,13 @@
         var coloresDeTexto = [];
         var figuras = [];
 
+        function encenderAudio() {
+            Tone.Transport.start();
+            // if (Tone.context.state !== 'running') {
+            //     Tone.Transport.start();
+            // }
+        }
+
         function tomaDe(array) {
             return array[Math.floor(Math.random() * array.length)];
         }
@@ -273,15 +280,15 @@
             melodiaBajo.interval = "1n";
 
             Tone.Transport.bpm.value = 40;
-
-            Tone.Transport.start();
         }
 
         function mousePressed() {
+            encenderAudio();
             frase = (frase + 1) % frases.length;
         }
 
         function keyPressed() {
+            encenderAudio();
             frase = (frase + 1) % frases.length;   
         }
 
