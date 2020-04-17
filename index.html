@@ -68,7 +68,25 @@
             "BARBADILLO,\nTRONCA",
             "TIENES\n42",
             "SÍ, SÍ\n HAS LEÍDO BIEN",
-            "42"
+            ["42", 500],
+            "Y ESTÁS\nCONFINADA",
+            "YA...",
+            ["BUFF", 400],
+            "MENUDO\nPLAN",
+            "PERO",
+            "NO TE\nPREOCUPES",
+            ["TODAVÍA", 200],
+            "NO ESTÁS\nEN EDAD",
+            ["DE\nRIESGO", 300],
+            "POR ESO",
+            "TE HE\nPREPARADO",
+            "ESTE\nRECORDATORIO",
+            "DE SALUD\nY JUVENTUD",
+            "COMO\nREGALO",
+            "SÍ...",
+            "ES LO QUE HAY",
+            "TE DIRÍA\nOTRA COSA",
+            "PERO ES QUE..."
         ];
         var frase = 0;
 
@@ -119,7 +137,6 @@
 
             createCanvas(wWidth, wHeight);            
             rectMode(CENTER); 
-            textSize(125);
             textAlign(CENTER, CENTER);
             textFont('Kanit');
 
@@ -264,9 +281,15 @@
             frase = (frase + 1) % frases.length;
         }
 
+        function keyPressed() {
+            frase = (frase + 1) % frases.length;   
+        }
+
         function draw() {
             var i;
+            var k;
             var c;
+            var fraseEscogida;
 
             clear();
 
@@ -324,9 +347,17 @@
             if (mostrarTexto) {
                 noStroke();
                 for (i = 0; i < coloresDeTexto.length; i++) {
+                    k = coloresDeTexto.length - 1 - i;
                     c = color(coloresDeTexto[i]);
                     fill(c);
-                    text(frases[frase], wWidth / 2 + 4 * i, wHeight / 2 + 6 * i);
+                    fraseEscogida = frases[frase];
+                    if (Array.isArray(fraseEscogida)) {
+                        textSize(fraseEscogida[1]);
+                        text(fraseEscogida[0], wWidth / 2 - 4 * k, wHeight / 2 - 6 * k);    
+                    } else {
+                        textSize(125);
+                        text(fraseEscogida, wWidth / 2 - 4 * k, wHeight / 2 - 6 * k);    
+                    }                    
                 }
             }
 
