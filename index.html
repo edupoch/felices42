@@ -107,6 +107,17 @@
             return array[Math.floor(Math.random() * array.length)];
         }
 
+        function tomaSinRepetirDe(array) {
+            var copy = array.slice(0);
+            return function() {
+                if (copy.length < 1) { copy = array.slice(0); }
+                var index = Math.floor(Math.random() * copy.length);
+                var item = copy[index];
+                copy.splice(index, 1);
+                return item;
+            };
+        }
+
         function trozoDe(distancia) {
             return Math.round(Math.random() * distancia);
         }
@@ -136,6 +147,7 @@
             var $window = $(window);
             var figura;
             var i;
+            var seleccionaColor = tomaSinRepetirDe(paleta);
             
             wWidth = $window.width();
             wHeight = $window.height();
@@ -157,7 +169,7 @@
             textFont('Kanit');
 
             for (i = 0; i < Math.min(paleta.length, 3); i++) {
-                coloresDeTexto.push(paleta[i]);
+                coloresDeTexto.push(seleccionaColor());
             }
 
             formas = tomaDe(configuraciones);
